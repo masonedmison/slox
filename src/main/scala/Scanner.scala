@@ -47,7 +47,7 @@ final case class Scanner(source: String) {
       case '-' => addToken(MINUS)
       case '+' => addToken(PLUS)
       case ';' => addToken(SEMICOLON)
-      case ':' => addToken(STAR)
+      case '*' => addToken(STAR)
       case '!' =>
         addToken(
           if (_match('='))

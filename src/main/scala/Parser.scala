@@ -1,8 +1,9 @@
 import exprs.Expr
 
 import TokenType.*
+import java.util.ArrayList
 
-class Parser(tokens: IndexedSeq[Token]) {
+class Parser(tokens: ArrayList[Token]) {
   private var current: Int = 0
 
   // TODO don't like this
@@ -29,7 +30,7 @@ class Parser(tokens: IndexedSeq[Token]) {
       peek._type == tType
 
   private def isAtEnd: Boolean = peek._type == EOF
-  private def previous: Token = tokens(current - 1)
+  private def previous: Token = tokens.get(current - 1)
 
   private def error(token: Token, msg: String): ParseError = {
     Lox.error(token, msg)
@@ -57,7 +58,7 @@ class Parser(tokens: IndexedSeq[Token]) {
       current += 1
     previous
 
-  private def peek = tokens(current)
+  private def peek = tokens.get(current)
 
   private def consume(tType: TokenType, msg: String) =
     if (check(tType))
@@ -134,5 +135,5 @@ class Parser(tokens: IndexedSeq[Token]) {
 }
 
 object Parser {
-  def apply(tokens: IndexedSeq[Token]) = new Parser(tokens)
+  def apply(tokens: ArrayList[Token]) = new Parser(tokens)
 }
