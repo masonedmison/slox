@@ -1,0 +1,5 @@
+fun myFunc(name) {
+  return name + " !";
+}
+
+myFunc("Mason");

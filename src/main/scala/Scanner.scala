@@ -83,7 +83,7 @@ final case class Scanner(source: String) {
         } else
           addToken(SLASH)
       case ' '  => ()
-      case 'r'  => ()
+      case '\r' => ()
       case '\t' => ()
       case '\n' =>
         line += 1
@@ -103,8 +103,12 @@ final case class Scanner(source: String) {
       advance
 
     val text = source.substring(start, current)
-    val _type = keywords.get(text).getOrElse(IDENITIFIER)
-    addToken(_type)
+    keywords.get(text).getOrElse(IDENITIFIER) match {
+      case TRUE  => addToken(TRUE, true)
+      case FALSE => addToken(FALSE, false)
+      case _type => addToken(_type)
+    }
+
   }
 
   private def number: Unit = {
@@ -115,7 +119,10 @@ final case class Scanner(source: String) {
       advance
       while (isDigit(peek))
         advance
-    } else addToken(NUMBER, source.substring(start, current).toDouble)
+    } else {
+      val value = source.substring(start, current).toDouble
+      addToken(NUMBER, value)
+    }
 
   }
 

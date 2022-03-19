@@ -1,0 +1,9 @@
+fun sayHi(first, last) {
+  var s = "Hi, " + first + " " + last + "!";
+  // print s;
+  return s;
+}
+
+var temp = sayHi("Mason", "Edmison");
+
+print temp;

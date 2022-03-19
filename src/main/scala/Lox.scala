@@ -9,6 +9,8 @@ import java.util.ArrayList
 
 object Lox:
 
+  private val interpreter = new Interpreter()
+
   var hadError = false
   var hadRuntimeError = false
 
@@ -52,16 +54,18 @@ object Lox:
   private def run(source: String): Unit = {
     val scanner = new Scanner(source)
     val tokens: ArrayList[Token] = scanner.scanTokens
-    tokens.toArray.foreach(println)
+    // tokens.toArray.foreach(println)
 
     val parser = new Parser(tokens)
-    val expr = parser.parse
+    val stmts = parser.parse
 
-    if (hadError) return
+    val resolver = Resolver(interpreter)
+    resolver.resolve(stmts)
+
+    if (hadError)
+      return
     else
-      // print AST for debugging
-      println(AstPrinter.interpret(expr))
-      Interpreter.evaluate(expr)
+      interpreter.evaluate(stmts)
   }
 
   def error(line: Int, message: String) = report(line, "", message)
