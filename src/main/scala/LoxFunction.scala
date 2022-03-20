@@ -2,7 +2,8 @@ import stmts.Stmt
 
 import java.util.ArrayList
 
-class LoxFunction private (declaration: Stmt.Function, closure: Environment) extends LoxCallable {
+class LoxFunction private (declaration: Stmt.Function, closure: Environment, isInitializer: Boolean)
+  extends LoxCallable {
 
   def arity: Int = declaration.params.size
 
@@ -18,7 +19,11 @@ class LoxFunction private (declaration: Stmt.Function, closure: Environment) ext
 
     try interp.executeBlock(declaration.body, env)
     catch {
-      case Return(value) => return value
+      case Return(value) =>
+        if (isInitializer)
+          return closure.getAt(0, "this")
+        else
+          return value
     }
 
     return null
@@ -29,12 +34,13 @@ class LoxFunction private (declaration: Stmt.Function, closure: Environment) ext
     val env = new Environment(closure)
     env.define("this", instance)
 
-    LoxFunction.apply(declaration, env)
+    LoxFunction.apply(declaration, env, isInitializer)
   }
 
   override def toString: String = s"<fn ${declaration.name.lexeme}>"
 }
 
 object LoxFunction {
-  def apply(decl: Stmt.Function, closure: Environment): LoxFunction = new LoxFunction(decl, closure)
+  def apply(decl: Stmt.Function, closure: Environment, isInitializer: Boolean): LoxFunction =
+    new LoxFunction(decl, closure, isInitializer)
 }

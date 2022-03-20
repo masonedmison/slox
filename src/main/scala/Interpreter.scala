@@ -42,7 +42,7 @@ class Interpreter() extends exprs.ExprInterpreter[Any] with stmts.StmtInterprete
         while (isTruthy(interpret(cond)))
           interpret(body)
       case func @ Stmt.Function(name, _, _) =>
-        val loxFunc = LoxFunction.apply(func, environment)
+        val loxFunc = LoxFunction.apply(func, environment, isInitializer = false)
         environment.define(name.lexeme, loxFunc)
       case cls @ Stmt.ClassDecl(_, _) => interpretCls(cls)
       case Stmt.Return(keyword, expr) =>
@@ -181,7 +181,10 @@ class Interpreter() extends exprs.ExprInterpreter[Any] with stmts.StmtInterprete
     val methods: HashMap[String, LoxFunction] = new HashMap()
 
     cls.methods.forEach { meth =>
-      methods.put(meth.name.lexeme, LoxFunction.apply(meth, environment))
+      methods.put(
+        meth.name.lexeme,
+        LoxFunction.apply(meth, environment, isInitializer = meth.name.lexeme == "init"),
+      )
     }
 
     val klass = LoxClass(cls.name.lexeme, methods)

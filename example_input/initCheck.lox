@@ -1,0 +1,21 @@
+class Weekend {
+  init(funLevel, numNaps) {
+    this.funLevel = funLevel;
+    this.numNaps = numNaps;
+  }
+
+  howManyNaps() {
+    print this.numNaps; 
+    print " is how many naps I will take today";
+  }
+
+  howMuchFun() {
+    print "I will have " + this.funLevel + " this weekend!";
+  }
+}
+
+var weekend = Weekend("so much fun", 2);
+
+weekend.howManyNaps();
+
+weekend.howMuchFun();

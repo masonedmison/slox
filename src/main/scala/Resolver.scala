@@ -15,6 +15,7 @@ class Resolver private (interpreter: Interpreter)
 
   private val scopes: Stack[HashMap[String, Boolean]] = new Stack
   private var currentFunction = FunctionType.NONE
+  private var currentClass = ClassType.NONE
 
   def interpret(stmt: Stmt): Unit =
     stmt match {
@@ -56,7 +57,7 @@ class Resolver private (interpreter: Interpreter)
       case Expr.Set(obj, name, value) =>
         interpret(obj)
         interpret(value)
-      case _this @ Expr.This(_) => resolveLocal(_this, _this.keyword)
+      case _this @ Expr.This(_) => interpretThis(_this)
     }
 
   private def interpretReturn(stmt: Stmt.Return): Unit = {
@@ -64,7 +65,10 @@ class Resolver private (interpreter: Interpreter)
       Lox.error(stmt.keyword, "Can't return from top-level code.")
 
     if (stmt.value != null)
-      interpret(stmt.value)
+      if (currentFunction == FunctionType.INITIALIZER)
+        Lox.error(stmt.keyword, "Can't reuturn a value from an initializer")
+      else
+        interpret(stmt.value)
   }
 
   private def interpretBlock(stmts: ArrayList[Stmt]): Unit = {
@@ -88,14 +92,32 @@ class Resolver private (interpreter: Interpreter)
   }
 
   def interpretCls(stmt: Stmt.ClassDecl): Unit = {
+    val enclosingCls = currentClass
+    currentClass = ClassType.CLASS
     declare(stmt.name)
+
     define(stmt.name)
 
     beginScope
     scopes.peek.put("this", true)
-    stmt.methods.forEach(meth => resolveFunction(meth, FunctionType.METHOD))
+    stmt.methods.forEach { meth =>
+      val decl =
+        if (meth.name.lexeme == "init")
+          FunctionType.INITIALIZER
+        else
+          FunctionType.METHOD
+      resolveFunction(meth, decl)
+    }
     endScope
+
+    currentClass = enclosingCls
   }
+
+  private def interpretThis(expr: Expr.This): Unit =
+    if (currentClass == ClassType.NONE)
+      Lox.error(expr.keyword, "Can't use 'this' outside of class.")
+    else
+      resolveLocal(expr, expr.keyword)
 
   private def interpretVarExpr(varExp: Expr.Variable): Unit = {
     if (!scopes.isEmpty && scopes.peek.get(varExp.name) != false) {
@@ -170,6 +192,11 @@ object Resolver {
     case NONE
     case FUNCTION
     case METHOD
+    case INITIALIZER
+
+  private[Resolver] enum ClassType:
+    case NONE
+    case CLASS
 
   def apply(interpreter: Interpreter): Resolver = new Resolver(interpreter)
 }
